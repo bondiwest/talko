@@ -1,0 +1,14 @@
+{
+  "name": "landing-talko",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix talko run dev",
+    "build": "npm --prefix talko run build",
+    "preview": "npm --prefix talko run preview",
+    "lint": "npm --prefix talko run lint"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.18",
+    "tailwindcss": "^4.1.18"
+  }
+}

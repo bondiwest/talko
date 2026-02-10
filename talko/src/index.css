@@ -1,0 +1,839 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Gilroy";
+  src: url("/fonts/Gilroy-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "PP Neue Machina";
+  src: url("/fonts/PPNeueMachina-Ultrabold.otf") format("opentype");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/Inter-SemiBold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-display {
+  font-family: "Gilroy", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, Helvetica, Arial;
+}
+
+.font-body {
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, Helvetica, Arial;
+}
+
+:root {
+  --bg: #ffffff;
+  --card: #ffffff;
+  --surface: rgba(255, 255, 255, 0.72);
+  --surface-2: rgba(255, 255, 255, 0.55);
+  --field: rgba(255, 255, 255, 0.70);
+  --overlay: rgba(255, 255, 255, 0.60);
+  --ring: rgba(0, 0, 0, 0.06);
+  --ring-strong: rgba(0, 0, 0, 0.10);
+  --hover: rgba(0, 0, 0, 0.04);
+  --disabled-bg: rgba(0, 0, 0, 0.08);
+  --disabled-text: rgba(0, 0, 0, 0.35);
+  --bg-light-opacity: 0.95;
+  --bg-dark-opacity: 0;
+  --ink: #3c344c; /* headings */
+  --body-ink: #2d2839; /* body text */
+  --muted: #6f6a80;
+  --accent: #6966ff;
+  --accent-ink: #3f3ae6;
+  --pill: #eef0ff;
+  /* iOS-like frosted glass (keep alpha low so the backdrop is visible). */
+  --glass: rgba(255, 255, 255, 0.34);
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --glass-stroke: rgba(20, 20, 40, 0.12);
+
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, Helvetica, Arial;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #070911;
+  --card: rgba(20, 22, 34, 0.72);
+  --surface: rgba(18, 20, 32, 0.78);
+  --surface-2: rgba(18, 20, 32, 0.62);
+  --field: rgba(14, 16, 26, 0.72);
+  --overlay: rgba(6, 8, 12, 0.72);
+  --ring: rgba(255, 255, 255, 0.10);
+  --ring-strong: rgba(255, 255, 255, 0.18);
+  --hover: rgba(255, 255, 255, 0.06);
+  --disabled-bg: rgba(255, 255, 255, 0.08);
+  --disabled-text: rgba(255, 255, 255, 0.35);
+
+  --ink: rgba(255, 255, 255, 0.92);
+  --body-ink: rgba(255, 255, 255, 0.82);
+  --muted: rgba(255, 255, 255, 0.58);
+  --accent-ink: #d5d3ff;
+  --pill: rgba(105, 102, 255, 0.18);
+  --bg-light-opacity: 0;
+  --bg-dark-opacity: 0.76;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+html {
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+  /* Prevent iOS Safari from auto-resizing text. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Focus ring only for keyboard users (see main.jsx input-modality toggle). */
+/* Remove browser default outlines; we re-add them for keyboard users only. */
+:where(a, button, input, textarea, select, [tabindex]):focus {
+  outline: none;
+}
+
+html.user-is-tabbing :where(a, button, input, textarea, select, [tabindex]):focus {
+  outline: 2px solid rgba(105, 102, 255, 0.55);
+  outline-offset: 3px;
+}
+
+/* Glass buttons: never show the default outline (use glow for keyboard focus instead). */
+.glass-btn:focus {
+  outline: none;
+}
+
+html.user-is-tabbing .glass-btn:focus {
+  outline: none;
+  box-shadow:
+    0 18px 40px rgba(105, 102, 255, 0.12),
+    0 0 0 3px rgba(105, 102, 255, 0.35);
+}
+
+/* Mobile: avoid "purple outline" after taps (keep focus styles for keyboard users on desktop). */
+@media (hover: none) and (pointer: coarse) {
+  html.user-is-tabbing :where(a, button, [tabindex]):focus {
+    outline: none;
+  }
+  :where(a, button) {
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* Some mobile browsers emulate :hover after tap; disable hover filters for glass buttons. */
+  .glass-btn:hover {
+    filter: none !important;
+  }
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--bg);
+  color: var(--body-ink);
+  font-size: 16px;
+}
+
+@media (min-width: 640px) {
+  body {
+    font-size: 18px;
+  }
+}
+
+@media (min-width: 768px) {
+  body {
+    font-size: 20px;
+  }
+}
+
+#root {
+  min-height: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+/* Subtle animated gradient backdrop (behind all content). */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -20vmax;
+  z-index: 0;
+  pointer-events: none;
+
+  /* Soft, low-contrast gradient field. */
+  background:
+    radial-gradient(40% 30% at 18% 22%, rgba(105, 102, 255, 0.14), rgba(105, 102, 255, 0) 60%),
+    radial-gradient(44% 36% at 82% 24%, rgba(255, 160, 200, 0.10), rgba(255, 160, 200, 0) 62%),
+    radial-gradient(42% 34% at 62% 78%, rgba(105, 102, 255, 0.10), rgba(105, 102, 255, 0) 62%),
+    radial-gradient(38% 30% at 24% 74%, rgba(120, 210, 255, 0.08), rgba(120, 210, 255, 0) 60%);
+
+  filter: blur(40px);
+  opacity: var(--bg-light-opacity);
+  transform: translate3d(0, 0, 0);
+  animation: talko-gradient-drift 12s ease-in-out infinite alternate;
+  transition: opacity 420ms ease;
+}
+
+/* Dark gradient layer (cross-faded via opacity vars). */
+body::after {
+  content: "";
+  position: fixed;
+  inset: -20vmax;
+  z-index: 0;
+  pointer-events: none;
+  opacity: var(--bg-dark-opacity);
+  background:
+    radial-gradient(42% 34% at 18% 22%, rgba(105, 102, 255, 0.22), rgba(105, 102, 255, 0) 62%),
+    radial-gradient(46% 38% at 82% 24%, rgba(255, 160, 200, 0.14), rgba(255, 160, 200, 0) 64%),
+    radial-gradient(44% 36% at 62% 78%, rgba(105, 102, 255, 0.16), rgba(105, 102, 255, 0) 64%),
+    radial-gradient(40% 32% at 24% 74%, rgba(120, 210, 255, 0.12), rgba(120, 210, 255, 0) 62%);
+  filter: blur(56px);
+  transform: translate3d(0, 0, 0);
+  animation: talko-gradient-drift 12s ease-in-out infinite alternate;
+  transition: opacity 420ms ease;
+}
+
+/* Subtle grain layer to reduce the "flatness" of large areas. */
+#root::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.35) 0px,
+      rgba(0, 0, 0, 0.35) 1px,
+      rgba(0, 0, 0, 0) 2px,
+      rgba(0, 0, 0, 0) 3px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.25) 0px,
+      rgba(0, 0, 0, 0.25) 1px,
+      rgba(0, 0, 0, 0) 2px,
+      rgba(0, 0, 0, 0) 4px
+    );
+  background-size: 140px 140px, 220px 220px;
+  mix-blend-mode: multiply;
+  transition: opacity 420ms ease;
+}
+
+html[data-theme="dark"] #root::before {
+  opacity: 0.08;
+  mix-blend-mode: overlay;
+}
+
+@keyframes talko-gradient-drift {
+  0% {
+    transform: translate3d(-5%, -3%, 0) scale(1.05) rotate(-1.2deg);
+  }
+  50% {
+    transform: translate3d(5%, 3.5%, 0) scale(1.08) rotate(1.2deg);
+  }
+  100% {
+    transform: translate3d(-3%, 5%, 0) scale(1.06) rotate(-0.6deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before {
+    animation: none;
+  }
+  body::after {
+    animation: none;
+  }
+  #root::before {
+    display: none;
+  }
+  .glass-zoom,
+  .glass-sheen {
+    animation: none;
+  }
+}
+
+/* Smooth theme toggle (only applied when Header adds .theme-tx). */
+html.theme-tx body,
+html.theme-tx .glass-bar,
+html.theme-tx .glass-btn,
+html.theme-tx .glass-link,
+html.theme-tx section,
+html.theme-tx article,
+html.theme-tx input,
+html.theme-tx textarea,
+html.theme-tx button,
+html.theme-tx a {
+  transition:
+    color 420ms ease,
+    background-color 420ms ease,
+    border-color 420ms ease,
+    box-shadow 420ms ease,
+    opacity 420ms ease,
+    filter 420ms ease;
+}
+
+/* Liquid glass navigation. */
+.glass-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+/* Header breakpoint: show burger up to 949px, desktop nav from 950px. */
+.nav-desktop {
+  display: none;
+}
+
+.nav-burger {
+  display: grid;
+}
+
+.nav-mobile {
+  display: block;
+}
+
+@media (min-width: 950px) {
+  .nav-desktop {
+    display: flex;
+  }
+  .nav-burger {
+    display: none;
+  }
+  .nav-mobile {
+    display: none;
+  }
+}
+
+html[data-theme="dark"] .glass-bar {
+  background:
+    radial-gradient(160% 140% at 0% 0%, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0) 62%),
+    radial-gradient(160% 140% at 100% 0%, rgba(105, 102, 255, 0.18), rgba(105, 102, 255, 0) 60%),
+    linear-gradient(180deg, rgba(18, 20, 32, 0.86), rgba(10, 12, 20, 0.68));
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow:
+    0 26px 90px rgba(0, 0, 0, 0.55),
+    0 12px 36px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -1px 0 rgba(0,  0,  0,  0.62);
+}
+
+html[data-theme="dark"] .glass-bar::after {
+  background:
+    radial-gradient(120% 120% at 18% 0%, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 55%),
+    radial-gradient(120% 120% at 82% 0%, rgba(105, 102, 255, 0.14), rgba(105, 102, 255, 0) 55%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.10), rgba(0, 0, 0, 0.22));
+  opacity: 0.88;
+}
+
+html[data-theme="dark"] .glass-bar::before {
+  opacity: 0.55;
+}
+
+html[data-theme="dark"] .glass-link:hover,
+html[data-theme="dark"] .glass-link:focus-visible,
+html[data-theme="dark"] .glass-link-active {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.46);
+}
+
+html[data-theme="dark"] .glass-btn {
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0) 62%),
+    linear-gradient(180deg, rgba(18, 20, 32, 0.86), rgba(10, 12, 20, 0.68));
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.46);
+}
+
+html[data-theme="dark"] .glass-btn::before {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0) 30%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0) 34%),
+    radial-gradient(120% 120% at 18% 0%, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 55%);
+  opacity: 0.9;
+}
+
+html[data-theme="dark"] .glass-zoom {
+  opacity: 0.48;
+  filter: blur(40px);
+  background:
+    radial-gradient(42% 34% at 18% 22%, rgba(105, 102, 255, 0.22), rgba(105, 102, 255, 0) 62%),
+    radial-gradient(46% 38% at 82% 24%, rgba(255, 160, 200, 0.12), rgba(255, 160, 200, 0) 64%),
+    radial-gradient(44% 36% at 62% 78%, rgba(105, 102, 255, 0.16), rgba(105, 102, 255, 0) 64%),
+    radial-gradient(40% 32% at 24% 74%, rgba(120, 210, 255, 0.10), rgba(120, 210, 255, 0) 62%);
+}
+
+html[data-theme="dark"] .glass-sheen {
+  opacity: 0.18;
+}
+
+.glass-bar {
+  position: relative;
+  isolation: isolate;
+  border-radius: 9999px;
+  overflow: hidden;
+  /*
+    Cross-browser "glass" (consistent everywhere):
+    We intentionally avoid backdrop-filter (Firefox support is inconsistent),
+    and simulate the look using layered translucency, highlights and shadows.
+  */
+  background:
+    radial-gradient(160% 140% at 0% 0%, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0) 62%),
+    radial-gradient(160% 140% at 100% 0%, rgba(105, 102, 255, 0.14), rgba(105, 102, 255, 0) 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0.34));
+  border: 1px solid rgba(20, 20, 40, 0.12);
+  box-shadow:
+    0 26px 90px rgba(105, 102, 255, 0.12),
+    0 12px 36px rgba(20, 20, 40, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.06);
+  transition:
+    box-shadow 260ms ease,
+    background 260ms ease,
+    border-color 260ms ease;
+}
+
+/* Real background blur where supported. Fallback remains the same on browsers without it. */
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .glass-bar {
+    -webkit-backdrop-filter: blur(18px) saturate(1.35);
+    backdrop-filter: blur(18px) saturate(1.35);
+  }
+  .glass-btn {
+    -webkit-backdrop-filter: blur(16px) saturate(1.3);
+    backdrop-filter: blur(16px) saturate(1.3);
+  }
+}
+
+.glass-bar > :not(.glass-sheen):not(.glass-zoom) {
+  position: relative;
+  z-index: 3;
+}
+
+.glass-zoom {
+  position: absolute;
+  inset: -55%;
+  z-index: 0;
+  border-radius: 9999px;
+  pointer-events: none;
+  opacity: 0.68;
+  filter: blur(34px);
+  transform: translate3d(0, 0, 0) scale(1.08);
+  animation: talko-glass-zoom-drift 10s ease-in-out infinite alternate;
+
+  /*
+    "Lens zoom" illusion:
+    draw a scaled-up version of the ambient background field inside the glass.
+    This is cross-browser and avoids backdrop-filter artifacts.
+  */
+  background:
+    radial-gradient(40% 30% at 18% 22%, rgba(105, 102, 255, 0.18), rgba(105, 102, 255, 0) 62%),
+    radial-gradient(44% 36% at 82% 24%, rgba(255, 160, 200, 0.12), rgba(255, 160, 200, 0) 64%),
+    radial-gradient(42% 34% at 62% 78%, rgba(105, 102, 255, 0.12), rgba(105, 102, 255, 0) 64%),
+    radial-gradient(38% 30% at 24% 74%, rgba(120, 210, 255, 0.10), rgba(120, 210, 255, 0) 62%);
+}
+
+@keyframes talko-glass-zoom-drift {
+  0% {
+    transform: translate3d(-2%, -1%, 0) scale(1.10);
+  }
+  50% {
+    transform: translate3d(2.5%, 1.5%, 0) scale(1.12);
+  }
+  100% {
+    transform: translate3d(-1%, 2%, 0) scale(1.10);
+  }
+}
+.glass-sheen {
+  position: absolute;
+  inset: -45%;
+  z-index: 1;
+  border-radius: 9999px;
+  pointer-events: none;
+  opacity: 0.26;
+  filter: blur(18px);
+  transform: translate3d(0, 0, 0);
+
+  /* Soft iridescence (no blend modes, so it looks consistent everywhere). */
+  background:
+    radial-gradient(38% 34% at 22% 32%, rgba(105, 102, 255, 0.35), rgba(105, 102, 255, 0) 70%),
+    radial-gradient(34% 30% at 78% 36%, rgba(255, 170, 220, 0.28), rgba(255, 170, 220, 0) 70%),
+    radial-gradient(36% 32% at 52% 78%, rgba(120, 210, 255, 0.20), rgba(120, 210, 255, 0) 72%);
+
+  animation: talko-glass-sheen 11s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+.glass-bar-scrolled .glass-sheen {
+  opacity: 0.32;
+}
+
+@keyframes talko-glass-sheen {
+  0% {
+    transform: translate3d(-2%, 1%, 0) rotate(-6deg) scale(1.02);
+  }
+  50% {
+    transform: translate3d(3%, -2%, 0) rotate(7deg) scale(1.05);
+  }
+  100% {
+    transform: translate3d(-1%, 3%, 0) rotate(-3deg) scale(1.03);
+  }
+}
+
+.glass-bar::after {
+  /* Edge polish: keep it simple for perfect cross-browser consistency. */
+  content: "";
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  border-radius: 9999px;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 120% at 18% 0%, rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0) 55%),
+    radial-gradient(120% 120% at 82% 0%, rgba(105, 102, 255, 0.10), rgba(105, 102, 255, 0) 55%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.05));
+  opacity: 0.85;
+}
+
+.glass-bar-scrolled {
+  background:
+    radial-gradient(160% 140% at 0% 0%, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0) 60%),
+    radial-gradient(160% 140% at 100% 0%, rgba(105, 102, 255, 0.16), rgba(105, 102, 255, 0) 58%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.54));
+  border-color: rgba(20, 20, 40, 0.12);
+  box-shadow:
+    0 28px 100px rgba(105, 102, 255, 0.16),
+    0 12px 36px rgba(20, 20, 40, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+}
+
+.glass-bar::before {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0) 55%),
+    radial-gradient(120% 120% at 100% 0%, rgba(105, 102, 255, 0.16), rgba(105, 102, 255, 0) 55%),
+    radial-gradient(120% 120% at 70% 120%, rgba(255, 170, 220, 0.10), rgba(255, 170, 220, 0) 55%);
+  inset: 0;
+  border-radius: 9999px;
+  opacity: 0.62;
+  filter: blur(1px);
+  transform: translate3d(0, 0, 0);
+}
+
+
+.glass-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--muted);
+  transition:
+    transform 180ms ease,
+    color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease;
+  outline: none;
+}
+
+.glass-link::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 9999px;
+  background:
+    radial-gradient(140% 120% at 20% 20%, rgba(105, 102, 255, 0.22), rgba(105, 102, 255, 0) 55%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.20));
+  opacity: 0;
+  transition: opacity 200ms ease;
+  pointer-events: none;
+}
+
+.glass-link:hover,
+.glass-link:focus-visible {
+  color: var(--accent-ink);
+  background: rgba(255, 255, 255, 0.76);
+  transform: translateY(-1px);
+  box-shadow: 0 18px 40px rgba(105, 102, 255, 0.10);
+}
+
+.glass-link:hover::before,
+.glass-link:focus-visible::before {
+  opacity: 1;
+}
+
+.glass-link-active {
+  color: var(--accent-ink);
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.glass-link-active::before {
+  opacity: 1;
+}
+
+.glass-btn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 16px;
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0) 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.52));
+  color: var(--accent-ink);
+  border: 1px solid rgba(20, 20, 40, 0.12);
+  box-shadow: 0 18px 40px rgba(105, 102, 255, 0.12);
+}
+
+.glass-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0) 30%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0) 34%),
+    radial-gradient(120% 120% at 18% 0%, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0) 55%);
+  opacity: 0.85;
+  filter: blur(0.7px);
+}
+
+
+.glass-btn > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-link {
+    transition: none;
+  }
+  .glass-sheen {
+    animation: none;
+  }
+}
+
+/* Simple line clamp helper (no Tailwind plugin needed). */
+.clamp-4 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
+}
+
+/* Inline accent for important words/phrases inside paragraphs. */
+.accent-word {
+  font-weight: 600;
+  color: var(--ink);
+  background: linear-gradient(
+    to bottom,
+    rgba(105, 102, 255, 0) 55%,
+    rgba(105, 102, 255, 0.16) 55%
+  );
+  padding: 0 0.2em;
+  border-radius: 0.45em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+html[data-theme="dark"] .accent-word {
+  color: rgba(255, 255, 255, 0.92);
+  background: linear-gradient(
+    to bottom,
+    rgba(105, 102, 255, 0) 55%,
+    rgba(105, 102, 255, 0.26) 55%
+  );
+}
+
+/* Card titles: smaller around ~1200px (3-col layout) so they don't feel oversized. */
+@media (min-width: 1024px) and (max-width: 1279.98px) {
+  .project-card-title {
+    font-size: 44px;
+    line-height: 42px;
+  }
+}
+
+/* Legal typography helpers. */
+.legal-text {
+  hyphens: auto;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+/* Avatar "gloss" with a color-matched glow. Expects `--avatar-glow` inline. */
+.avatar-gloss {
+  position: relative;
+  isolation: isolate;
+  z-index: 0;
+}
+
+.avatar-gloss::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -26px;
+  background:
+    radial-gradient(
+      60% 60% at 35% 30%,
+      var(--avatar-glow, rgba(105, 102, 255, 0.42)),
+      rgba(105, 102, 255, 0) 70%
+    ),
+    radial-gradient(
+      55% 55% at 70% 70%,
+      rgba(255, 255, 255, 0.35),
+      rgba(255, 255, 255, 0) 65%
+    );
+  filter: blur(28px);
+  opacity: 0.78;
+  transform: translate3d(0, 12px, 0);
+  transition:
+    opacity 260ms ease,
+    transform 420ms ease,
+    filter 420ms ease;
+}
+
+/* More "gloss" when hovering the card. */
+.group:hover .avatar-gloss::before {
+  opacity: 1;
+  filter: blur(34px);
+  transform: translate3d(0, 10px, 0) scale(1.02);
+}
+
+/* Accent button: solid at rest, gradient + blob animation on hover. */
+.btn-accent {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--accent);
+  z-index: 0;
+}
+
+.btn-accent::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0;
+  /* Stay within the site's accent family (#6966FF) + add a subtle "shine". */
+  background-image:
+    linear-gradient(135deg, #6966ff 0%, #8e7bff 45%, #6966ff 100%),
+    linear-gradient(
+      115deg,
+      rgba(255, 255, 255, 0) 40%,
+      rgba(255, 255, 255, 0.36) 50%,
+      rgba(255, 255, 255, 0) 60%
+    );
+  background-size: 100% 100%, 220% 100%;
+  background-position: 0 0, -180% 0;
+  transition:
+    opacity 260ms ease,
+    background-position 700ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-accent::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 18rem;
+  height: 18rem;
+  right: -2.25rem;
+  bottom: -8.5rem;
+  border-radius: 9999px;
+  background: rgba(105, 102, 255, 0.28);
+  transform: rotate(45deg) translateX(6rem);
+  transform-origin: bottom left;
+  opacity: 0;
+  transition:
+    opacity 260ms ease,
+    transform 520ms ease;
+}
+
+/* Keep any nested elements above the animated layers. */
+.btn-accent > * {
+  position: relative;
+  z-index: 1;
+}
+
+.btn-accent:hover::before {
+  opacity: 1;
+  background-position: 0 0, 180% 0;
+}
+
+.btn-accent:hover::after {
+  opacity: 1;
+  transform: rotate(90deg) translateX(6rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-accent::before,
+  .btn-accent::after {
+    transition: none;
+  }
+}
+
+/* Reveal-on-scroll: subtle, fast, and disabled for reduced motion. */
+.reveal {
+  opacity: 0;
+  transform: translate3d(0, 16px, 0) scale(0.995);
+  transition:
+    opacity 760ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 960ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform, filter;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+/* Add a touch of blur on desktop only (too expensive on mobile). */
+@media (min-width: 900px) and (hover: hover) and (pointer: fine) {
+  .reveal {
+    filter: blur(6px);
+  }
+  .reveal.is-visible {
+    filter: blur(0px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+}

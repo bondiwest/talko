@@ -1,0 +1,1 @@
+Важно: для деплоя на Vercel/Netlify/NGINX нужно включить SPA rewrite (все пути на index.html), иначе /legal и т.п. при прямом заходе дадут 404.
