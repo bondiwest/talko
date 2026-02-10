@@ -26,15 +26,18 @@ jobs:
         with:
           node-version: 20
           cache: npm
+          cache-dependency-path: |
+            talko/package-lock.json
+            package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --prefix talko
 
       - name: Build
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
         run: |
-          npm run build
+          npm --prefix talko run build
           cp talko/dist/index.html talko/dist/404.html
           touch talko/dist/.nojekyll
 
