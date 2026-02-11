@@ -7,14 +7,15 @@ import { Reveal } from '../components/Reveal'
 import { ArrowRightIcon } from '../components/Icons'
 
 const DOC_TITLES = [
-  { id: 'privacy', title: 'Политика обработки персональных данных' },
-  { id: 'agreement', title: 'Пользовательское соглашение' },
-  { id: 'offer', title: 'Публичная оферта' },
+  { id: 'privacy', title: 'Политика обработки персональных данных', date: 'Редакция от 11 февраля 2026 г.' },
+  { id: 'agreement', title: 'Пользовательское соглашение', date: 'Редакция от 11 февраля 2026 г.' },
+  { id: 'offer', title: 'Публичная оферта', date: 'Редакция от 11 февраля 2026 г.' },
 ]
 
 function normalizeText(text) {
   return text
     .replace(/\uFEFF/g, '')
+    .replace(/[\u200B-\u200D\u2060]/g, '')
     .replace(/\f/g, '\n')
     .replace(/\u2028|\u2029/g, '\n')
     .replace(/\r\n?/g, '\n')
@@ -24,15 +25,32 @@ function normalizeText(text) {
 function splitDocLines(raw, title) {
   const normalized = normalizeText(raw)
   const lines = normalized.split('\n').map((l) => l.trimEnd())
+  const isRevisionLine = (line) => {
+    const compact = line
+      .trim()
+      .toLowerCase()
+      .replace(/[«»"'`]/g, '')
+      .replace(/\s+/g, ' ')
+    return compact.startsWith('редакция от ')
+  }
 
-  return lines
+  const cleaned = lines
     .filter((line) => {
       const trimmed = line.trim()
       if (!trimmed) return true
       if (trimmed.toLowerCase() === 'talko') return false
       if (trimmed.toLowerCase() === title.toLowerCase()) return false
+      if (isRevisionLine(trimmed)) return false
       return true
     })
+
+  // Defensive cleanup for docx quirks: strip any leading "Редакция от ..."
+  // lines that may survive after conversion due to hidden separators.
+  while (cleaned.length && isRevisionLine(cleaned[0])) {
+    cleaned.shift()
+  }
+
+  return cleaned
 }
 
 function splitParagraphs(lines) {
@@ -48,8 +66,19 @@ function splitParagraphs(lines) {
   }
 
   for (const line of lines) {
-    if (line.trim() === '') flush()
-    else buf.push(line)
+    const trimmed = line.trim()
+    const isTopLevelHeading = /^\d+\.\s+\S/.test(trimmed)
+
+    if (trimmed === '') {
+      flush()
+      continue
+    }
+
+    // Start a new visual block for each "N. Заголовок" section
+    // even when source text has no blank lines between sections.
+    if (isTopLevelHeading && buf.length) flush()
+
+    buf.push(line)
   }
   flush()
   return paras
@@ -86,7 +115,7 @@ function linkify(text) {
 
 function Paragraph({ text }) {
   return (
-    <p className="legal-text text-[16px] leading-[1.9] text-[var(--body-ink)] opacity-80 sm:text-[18px]">
+    <p className="legal-text text-pretty text-[16px] leading-[1.9] text-[var(--body-ink)] opacity-80 sm:text-[18px]">
       {linkify(text).map((p, idx) =>
         p.type === 'link' ? (
           <a
@@ -122,10 +151,10 @@ function NumberedList({ lines }) {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2.5">
       {items.map((it, idx) => (
-          <div key={idx} className="flex gap-3">
-          <div className="w-[52px] shrink-0 pt-[2px] text-right text-[14px] font-bold tracking-[-0.02em] text-[var(--muted)] sm:w-[72px] sm:text-[15px] md:w-[92px]">
+        <div key={idx} className="sm:grid sm:grid-cols-[92px_minmax(0,1fr)] sm:gap-3">
+          <div className="mb-1 text-[14px] font-bold tracking-[-0.02em] text-[var(--muted)] sm:mb-0 sm:pt-[2px] sm:text-right sm:text-[15px]">
             {it.n}
           </div>
           <div className="min-w-0">
@@ -138,6 +167,31 @@ function NumberedList({ lines }) {
 }
 
 function renderParagraphBlock(lines, key) {
+  const numberedLineRe = /^\d+(?:\.\d+)*\./
+  const isTopLevelSection = /^\d+\.\s+\S/.test(lines[0]?.trim() || '')
+  const hasSubItems = lines.slice(1).some((l) => /^\d+\.\d+/.test(l.trim()))
+
+  if (lines.length >= 2 && isTopLevelSection && hasSubItems) {
+    const heading = lines[0].trim()
+    const rest = lines.slice(1)
+    const numbered = rest.filter((l) => numberedLineRe.test(l.trim())).length
+
+    return (
+      <div key={key}>
+        <h3 className="font-display mt-8 text-[22px] font-bold leading-[1.1] text-[var(--ink)] sm:text-[26px] md:text-[28px]">
+          {heading}
+        </h3>
+        <div className="mt-4">
+          {rest.some((l) => numberedLineRe.test(l.trim())) && (rest.length === 1 || numbered / rest.length >= 0.6) ? (
+            <NumberedList lines={rest} />
+          ) : (
+            <Paragraph text={rest.map((l) => l.trim()).join(' ')} />
+          )}
+        </div>
+      </div>
+    )
+  }
+
   if (lines.length === 1 && looksLikeSmallHeading(lines[0])) {
     const s = lines[0].trim()
     return (
@@ -150,8 +204,9 @@ function renderParagraphBlock(lines, key) {
     )
   }
 
-  const numbered = lines.filter((l) => /^\d+(?:\.\d+)*\./.test(l.trim())).length
-  if (lines.length >= 2 && numbered / lines.length >= 0.6) {
+  const numbered = lines.filter((l) => numberedLineRe.test(l.trim())).length
+  const singleSubItem = lines.length === 1 && /^\d+\.\d+\./.test(lines[0].trim())
+  if (singleSubItem || (lines.length >= 2 && numbered / lines.length >= 0.6)) {
     return (
       <div key={key} className="mt-4">
         <NumberedList lines={lines} />
@@ -166,16 +221,24 @@ function renderParagraphBlock(lines, key) {
   )
 }
 
-function LegalDoc({ id, title, lines }) {
+function LegalDoc({ id, title, lines, date }) {
   const paras = splitParagraphs(lines)
   return (
     <section
       id={id}
       className="scroll-mt-28 rounded-[26px] bg-[var(--surface)] p-6 shadow-[0_22px_70px_rgba(105,102,255,.08)] ring-1 ring-[var(--ring)] backdrop-blur sm:p-8"
     >
+      <p className="font-body mb-3 text-[12px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)] sm:mb-4">
+        Юридический документ
+      </p>
       <h2 className="font-display text-[28px] font-bold leading-[28px] text-[var(--ink)] sm:text-[34px] sm:leading-[34px] md:text-[44px] md:leading-[44px]">
         {title}
       </h2>
+      {date ? (
+        <p className="mt-2 font-body text-[14px] font-medium text-[var(--muted)]">
+          {date}
+        </p>
+      ) : null}
 
       <div className="mt-6">
         {paras.map((p, idx) => renderParagraphBlock(p, `${id}-${idx}`))}
@@ -214,16 +277,19 @@ export function LegalPage() {
     {
       id: 'privacy',
       title: DOC_TITLES[0].title,
+      date: DOC_TITLES[0].date,
       lines: splitDocLines(privacyPolicyRaw, 'ПОЛИТИКА ОБРАБОТКИ ПЕРСОНАЛЬНЫХ ДАННЫХ'),
     },
     {
       id: 'agreement',
       title: DOC_TITLES[1].title,
+      date: DOC_TITLES[1].date,
       lines: splitDocLines(userAgreementRaw, 'ПОЛЬЗОВАТЕЛЬСКОЕ СОГЛАШЕНИЕ'),
     },
     {
       id: 'offer',
       title: DOC_TITLES[2].title,
+      date: DOC_TITLES[2].date,
       lines: splitDocLines(publicOfferRaw, 'ПУБЛИЧНАЯ ОФЕРТА'),
     },
   ]
@@ -248,31 +314,42 @@ export function LegalPage() {
             delay={120}
             className="mt-8 rounded-[24px] bg-[var(--card)] p-6 shadow-[0_22px_70px_rgba(105,102,255,.10)]"
           >
-            <p className="font-body text-[14px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">
-              Содержание
+            <p className="font-body text-[15px] font-medium leading-relaxed text-[var(--body-ink)] opacity-75 sm:text-[17px]">
+              Ниже размещены официальные документы Talko в актуальной редакции.
+              Используйте содержание для быстрого перехода к нужному разделу.
             </p>
-            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {DOC_TITLES.map((t) => (
-                <a
-                  key={t.id}
-                  href={`#${t.id}`}
-                  className="group rounded-[18px] bg-[var(--surface-2)] px-4 py-4 text-[16px] font-semibold text-[var(--ink)] shadow-[0_12px_40px_rgba(20,20,40,.06)] ring-1 ring-[var(--ring)] transition hover:bg-[var(--surface)]"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="font-body">{t.title}</span>
-                    <ArrowRightIcon className="h-4 w-4 opacity-35 transition group-hover:opacity-55" />
-                  </div>
-                </a>
-              ))}
-            </div>
           </Reveal>
 
-          <div className="mt-12 space-y-16">
-            {docs.map((doc, idx) => (
-              <Reveal key={doc.id} delay={100 + idx * 90}>
-                <LegalDoc {...doc} />
-              </Reveal>
-            ))}
+          <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[300px_minmax(0,1fr)] lg:items-start">
+            <Reveal as="aside" delay={140} className="lg:sticky lg:top-28">
+              <div className="rounded-[22px] bg-[var(--card)] p-5 shadow-[0_22px_70px_rgba(105,102,255,.08)] ring-1 ring-[var(--ring)]">
+                <p className="font-body text-[13px] font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">
+                  Содержание
+                </p>
+                <div className="mt-4 grid grid-cols-1 gap-3">
+                  {DOC_TITLES.map((t) => (
+                    <a
+                      key={t.id}
+                      href={`#${t.id}`}
+                      className="group rounded-[16px] bg-[var(--surface-2)] px-4 py-3 text-[15px] font-semibold text-[var(--ink)] shadow-[0_12px_40px_rgba(20,20,40,.06)] ring-1 ring-[var(--ring)] transition hover:bg-[var(--surface)]"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="font-body">{t.title}</span>
+                        <ArrowRightIcon className="h-4 w-4 opacity-35 transition group-hover:opacity-55" />
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </Reveal>
+
+            <div className="space-y-16">
+              {docs.map((doc, idx) => (
+                <Reveal key={doc.id} delay={120 + idx * 90}>
+                  <LegalDoc {...doc} />
+                </Reveal>
+              ))}
+            </div>
           </div>
         </div>
       </Container>

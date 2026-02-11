@@ -694,6 +694,12 @@ html[data-theme="dark"] .accent-word {
   position: relative;
   isolation: isolate;
   z-index: 0;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transform: translateZ(0);
+  transition: transform 260ms ease;
 }
 
 .avatar-gloss::before {
@@ -701,6 +707,7 @@ html[data-theme="dark"] .accent-word {
   position: absolute;
   z-index: -1;
   inset: -26px;
+  pointer-events: none;
   background:
     radial-gradient(
       60% 60% at 35% 30%,
@@ -721,11 +728,242 @@ html[data-theme="dark"] .accent-word {
     filter 420ms ease;
 }
 
+.avatar-gloss::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 24px;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.88);
+  background:
+    radial-gradient(
+      52% 52% at 50% 50%,
+      rgba(255, 255, 255, 0.42),
+      rgba(255, 255, 255, 0) 74%
+    );
+}
+
+.avatar-lottie {
+  position: absolute;
+  left: 50%;
+  top: -10px;
+  z-index: 3;
+  pointer-events: none;
+  width: 42px;
+  height: 42px;
+  transform: translate(-50%, 0);
+  opacity: 1;
+  filter: drop-shadow(0 12px 20px rgba(105, 102, 255, 0.2));
+}
+
+.avatar-lottie-canvas {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.avatar-lottie-fallback {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  font-size: 28px;
+  line-height: 1;
+  text-shadow: 0 8px 16px rgba(105, 102, 255, 0.24);
+  opacity: 1;
+  transition: opacity 180ms ease;
+}
+
+.avatar-lottie-fallback-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.avatar-lottie--ready .avatar-lottie-canvas {
+  opacity: 1;
+}
+
+.avatar-lottie--ready .avatar-lottie-fallback {
+  opacity: 0;
+}
+
+.avatar-lottie--floating {
+  animation: avatar-lottie-float var(--sticker-duration, 2400ms) linear forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes avatar-lottie-float {
+  0% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--sticker-x, 0px)), 16px) rotate(calc(var(--sticker-tilt, 0deg) * -0.12)) scale(0.94);
+  }
+  10% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--sticker-x, 0px)), 0px) rotate(calc(var(--sticker-tilt, 0deg) * 0.08)) scale(1);
+  }
+  24% {
+    opacity: 0.98;
+    transform: translate(
+        calc(-50% + var(--sticker-x, 0px) + calc(var(--sticker-sway, 10px) * 0.35)),
+        -16px
+      )
+      rotate(calc(var(--sticker-tilt, 0deg) * -0.05))
+      scale(1);
+  }
+  40% {
+    opacity: 0.92;
+    transform: translate(
+        calc(-50% + var(--sticker-x, 0px) - calc(var(--sticker-sway, 10px) * 0.25)),
+        -34px
+      )
+      rotate(calc(var(--sticker-tilt, 0deg) * 0.06))
+      scale(0.99);
+  }
+  56% {
+    opacity: 0.82;
+    transform: translate(
+        calc(-50% + var(--sticker-x, 0px) + calc(var(--sticker-sway, 10px) * 0.18)),
+        -50px
+      )
+      rotate(calc(var(--sticker-tilt, 0deg) * -0.04))
+      scale(0.985);
+  }
+  72% {
+    opacity: 0.68;
+    transform: translate(
+        calc(-50% + var(--sticker-x, 0px) - calc(var(--sticker-sway, 10px) * 0.12)),
+        -71px
+      )
+      rotate(calc(var(--sticker-tilt, 0deg) * 0.03))
+      scale(0.96);
+  }
+  86% {
+    opacity: 0.44;
+    transform: translate(calc(-50% + var(--sticker-x, 0px)), -84px) rotate(0deg) scale(0.95);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--sticker-x, 0px)), -102px) rotate(0deg) scale(0.94);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .avatar-lottie--floating {
+    animation: avatar-lottie-fade 520ms ease-out forwards;
+  }
+
+  @keyframes avatar-lottie-fade {
+    0% {
+      opacity: 0;
+      transform: translate(calc(-50% + var(--sticker-x, 0px)), 4px) scale(0.98);
+    }
+    18% {
+      opacity: 1;
+      transform: translate(calc(-50% + var(--sticker-x, 0px)), 0) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(calc(-50% + var(--sticker-x, 0px)), -8px) scale(0.99);
+    }
+  }
+
+  .avatar-gloss--burst .avatar-media,
+  .avatar-gloss--burst::before,
+  .avatar-gloss--burst::after {
+    animation: none;
+  }
+}
+
+.avatar-gloss:active {
+  transform: translateZ(0) scale(0.998);
+}
+
+.avatar-gloss:focus-visible {
+  outline: none;
+}
+
 /* More "gloss" when hovering the card. */
 .group:hover .avatar-gloss::before {
   opacity: 1;
   filter: blur(34px);
   transform: translate3d(0, 10px, 0) scale(1.02);
+}
+
+.avatar-media {
+  transition:
+    transform 220ms ease,
+    filter 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.avatar-gloss--burst .avatar-media {
+  animation: avatar-pop 760ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.avatar-gloss--burst::before {
+  animation: avatar-glow-burst 520ms ease;
+}
+
+.avatar-gloss--burst::after {
+  animation: avatar-ripple 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes avatar-pop {
+  0% {
+    transform: scale(1);
+    filter: saturate(1);
+  }
+  28% {
+    transform: scale(0.982);
+    filter: saturate(1.04);
+  }
+  62% {
+    transform: scale(1.012);
+    filter: saturate(1.08);
+  }
+  100% {
+    transform: scale(1);
+    filter: saturate(1);
+  }
+}
+
+@keyframes avatar-glow-burst {
+  0% {
+    opacity: 0.78;
+    filter: blur(28px);
+  }
+  45% {
+    opacity: 1;
+    filter: blur(36px);
+  }
+  100% {
+    opacity: 0.82;
+    filter: blur(30px);
+  }
+}
+
+@keyframes avatar-ripple {
+  0% {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  30% {
+    opacity: 0.56;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.18);
+  }
 }
 
 /* Accent button: solid at rest, gradient + blob animation on hover. */
