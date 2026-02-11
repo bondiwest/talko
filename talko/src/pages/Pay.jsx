@@ -7,6 +7,9 @@ const CLOUDPAYMENTS_SCRIPT_ID = 'cloudpayments-widget-script'
 const PUBLIC_ID = (import.meta.env.VITE_CP_PUBLIC_ID || 'pk_test_xxxxxxxxxxxxx').trim()
 const IS_DEV = import.meta.env.DEV
 const VAT = Number.parseInt(import.meta.env.VITE_CP_VAT || '5', 10)
+const PAYMENT_AMOUNT = 7.0
+const PAYMENT_CURRENCY = 'RUB'
+const PAYMENT_DESCRIPTION = 'Предоставление VIP-доступа'
 
 function loadCloudPayments() {
   if (globalThis.cp?.CloudPayments) return Promise.resolve()
@@ -45,11 +48,32 @@ function normalizeVat(vat) {
   return vat
 }
 
+function SpinnerIcon() {
+  return (
+    <svg
+      className="h-5 w-5 animate-spin"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      fill="none"
+    >
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.28" strokeWidth="2.5" />
+      <path
+        d="M21 12a9 9 0 0 0-9-9"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
 export function PayPage() {
   const [isWidgetReady, setIsWidgetReady] = useState(false)
   const [isPaying, setIsPaying] = useState(false)
   const [status, setStatus] = useState('idle') // idle | success | fail
   const [errorText, setErrorText] = useState('')
+  const [consentChecked, setConsentChecked] = useState(false)
+  const [pricingChecked, setPricingChecked] = useState(false)
 
   const params = useMemo(() => {
     const search = new URLSearchParams(window.location.search)
@@ -89,7 +113,8 @@ export function PayPage() {
   const uidValid = isPositiveIntString(params.uid)
   const invoiceValid = isPositiveIntString(params.invoice)
   const hasRequiredParams = uidValid && invoiceValid
-  const canPay = isWidgetReady && !isPaying && hasRequiredParams
+  const checkboxesValid = consentChecked && pricingChecked
+  const canPay = isWidgetReady && !isPaying && hasRequiredParams && checkboxesValid
 
   const onPay = () => {
     if (!uidValid) {
@@ -108,6 +133,10 @@ export function PayPage() {
       setErrorText('Не настроен VITE_CP_PUBLIC_ID')
       return
     }
+    if (!checkboxesValid) {
+      setErrorText('Подтвердите согласие с условиями перед оплатой')
+      return
+    }
     setErrorText('')
     setStatus('idle')
     setIsPaying(true)
@@ -115,29 +144,29 @@ export function PayPage() {
     const widget = new globalThis.cp.CloudPayments()
     const payload = {
       publicId: PUBLIC_ID,
-      description: 'Предоставление VIP-доступа',
-      amount: 7.0,
-      currency: 'RUB',
+      description: PAYMENT_DESCRIPTION,
+      amount: PAYMENT_AMOUNT,
+      currency: PAYMENT_CURRENCY,
       accountId: String(Number(params.uid)),
       invoiceId: String(Number(params.invoice)),
       data: {
         CloudPayments: {
           CustomerReceipt: {
             Items: [
-              {
-                label: 'VIP подписка',
-                price: 7.0,
-                quantity: 1,
-                amount: 7.0,
-                vat: normalizeVat(VAT),
-                method: 0,
-                object: 0,
-                measurementUnit: 'шт',
-              },
+                {
+                  label: 'VIP подписка',
+                  price: PAYMENT_AMOUNT,
+                  quantity: 1,
+                  amount: PAYMENT_AMOUNT,
+                  vat: normalizeVat(VAT),
+                  method: 0,
+                  object: 0,
+                  measurementUnit: 'шт',
+                },
             ],
           },
           amounts: {
-            electronic: 7.0,
+            electronic: PAYMENT_AMOUNT,
             advancePayment: 0.0,
             credit: 0.0,
             provision: 0.0,
@@ -192,38 +221,68 @@ export function PayPage() {
             as="section"
             className="mt-10 rounded-[24px] bg-[var(--card)] p-6 shadow-[0_22px_70px_rgba(105,102,255,.10)] ring-1 ring-[var(--ring)] sm:mt-12 sm:p-8"
           >
-            <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="rounded-[18px] bg-[var(--surface)] p-4 ring-1 ring-[var(--ring)]">
-                <dt className="font-body text-[14px] font-semibold uppercase tracking-[0.1em] text-[var(--muted)]">
-                  UID
-                </dt>
-                <dd className="mt-2 break-all font-body text-[17px] font-semibold text-[var(--ink)]">
-                  {params.uid || '— (обязательно)'}
-                </dd>
-              </div>
-              <div className="rounded-[18px] bg-[var(--surface)] p-4 ring-1 ring-[var(--ring)]">
-                <dt className="font-body text-[14px] font-semibold uppercase tracking-[0.1em] text-[var(--muted)]">
-                  INVOICE
-                </dt>
-                <dd className="mt-2 break-all font-body text-[17px] font-semibold text-[var(--ink)]">
-                  {params.invoice || '— (обязательно)'}
-                </dd>
-              </div>
-              <div className="rounded-[18px] bg-[var(--surface)] p-4 ring-1 ring-[var(--ring)] sm:col-span-2">
-                <dt className="font-body text-[14px] font-semibold uppercase tracking-[0.1em] text-[var(--muted)]">
-                  MAILING ID
-                </dt>
-                <dd className="mt-2 font-body text-[17px] font-semibold text-[var(--ink)]">
-                  {params.mid ?? 'null'}
-                </dd>
-              </div>
-            </dl>
-
             {hasRequiredParams ? (
-              <p className="mt-8 font-body text-[16px] font-medium leading-relaxed text-[var(--body-ink)] opacity-80 sm:text-[18px]">
-                После нажатия на кнопку откроется защищённое окно CloudPayments, где вы
-                сможете ввести данные карты и подтвердить оплату.
-              </p>
+              <>
+                <div className="rounded-[18px] bg-[var(--surface)] p-4 ring-1 ring-[var(--ring)]">
+                  <p className="font-body text-[14px] font-semibold uppercase tracking-[0.1em] text-[var(--muted)]">
+                    К оплате
+                  </p>
+                  <p className="mt-2 font-body text-[20px] font-semibold text-[var(--ink)] sm:text-[24px]">
+                    {PAYMENT_AMOUNT.toFixed(2)} ₽
+                  </p>
+                  <p className="mt-1 font-body text-[16px] font-medium text-[var(--body-ink)] opacity-80 sm:text-[18px]">
+                    {PAYMENT_DESCRIPTION}
+                  </p>
+                </div>
+
+                <p className="mt-6 font-body text-[16px] font-medium leading-relaxed text-[var(--body-ink)] opacity-80 sm:text-[18px]">
+                  После нажатия на кнопку откроется защищённое окно CloudPayments, где вы
+                  сможете ввести данные карты и подтвердить оплату.
+                </p>
+
+                <div className="mt-6 space-y-4 rounded-[18px] bg-[var(--surface)] p-4 ring-1 ring-[var(--ring)]">
+                  <label className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={consentChecked}
+                      onChange={(e) => setConsentChecked(e.target.checked)}
+                      className="mt-1 h-5 w-5 shrink-0 rounded border-[var(--ring-strong)] text-[var(--accent)]"
+                    />
+                    <span className="font-body text-[14px] leading-relaxed text-[var(--body-ink)] sm:text-[16px]">
+                      Я даю согласие на обработку персональных данных и принимаю условия{' '}
+                      <a
+                        href={`${import.meta.env.BASE_URL || '/'}legal#offer`}
+                        className="font-semibold text-[var(--ink)] underline decoration-[var(--ring)] underline-offset-4"
+                      >
+                        публичной оферты
+                      </a>{' '}
+                      и{' '}
+                      <a
+                        href={`${import.meta.env.BASE_URL || '/'}legal#privacy`}
+                        className="font-semibold text-[var(--ink)] underline decoration-[var(--ring)] underline-offset-4"
+                      >
+                        политики конфиденциальности
+                      </a>
+                      .
+                    </span>
+                  </label>
+
+                  <label className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={pricingChecked}
+                      onChange={(e) => setPricingChecked(e.target.checked)}
+                      className="mt-1 h-5 w-5 shrink-0 rounded border-[var(--ring-strong)] text-[var(--accent)]"
+                    />
+                    <span className="font-body text-[14px] leading-relaxed text-[var(--body-ink)] sm:text-[16px]">
+                      Я согласен с суммой и периодичностью списания: первый день 5₽, далее
+                      399₽ раз в 3 дня, либо 299₽ раз в 3 дня, либо 99₽ раз в день согласно
+                      тарифам и правилам рекуррентных платежей. Отменить подписку можно в
+                      любой момент.
+                    </span>
+                  </label>
+                </div>
+              </>
             ) : (
               <div className="mt-8 rounded-[18px] bg-[var(--surface)] p-4 font-body text-[16px] font-semibold text-[var(--body-ink)] ring-1 ring-[var(--ring)]">
                 Оплата заблокирована: в ссылке должны быть корректные параметры
@@ -244,7 +303,14 @@ export function PayPage() {
                     : 'cursor-not-allowed bg-[var(--disabled-bg)] text-[var(--disabled-text)]',
                 ].join(' ')}
               >
-                {isPaying ? 'Ожидание оплаты...' : 'Оплатить'}
+                {isPaying ? (
+                  <span className="inline-flex items-center gap-3">
+                    <SpinnerIcon />
+                    Ожидание оплаты...
+                  </span>
+                ) : (
+                  'Оплатить'
+                )}
               </button>
             ) : null}
 

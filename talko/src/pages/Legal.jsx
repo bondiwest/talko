@@ -1,40 +1,38 @@
 import { useEffect, useState } from 'react'
 import { Container } from '../components/Container'
-import rawText from '../data/конфедициальность.txt?raw'
+import privacyPolicyRaw from '../data/legal/privacy_pd.txt?raw'
+import userAgreementRaw from '../data/legal/user_agreement.txt?raw'
+import publicOfferRaw from '../data/legal/public_offer.txt?raw'
 import { Reveal } from '../components/Reveal'
 import { ArrowRightIcon } from '../components/Icons'
 
 const DOC_TITLES = [
-  { id: 'privacy', title: 'Политика конфиденциальности' },
-  { id: 'terms', title: 'Условия использования' },
-  { id: 'refund', title: 'Политика возврата' },
-  { id: 'pricing', title: 'Тарифы и цены' },
+  { id: 'privacy', title: 'Политика обработки персональных данных' },
+  { id: 'agreement', title: 'Пользовательское соглашение' },
+  { id: 'offer', title: 'Публичная оферта' },
 ]
 
 function normalizeText(text) {
-  return text.replace(/\r\n/g, '\n').trim()
+  return text
+    .replace(/\uFEFF/g, '')
+    .replace(/\f/g, '\n')
+    .replace(/\u2028|\u2029/g, '\n')
+    .replace(/\r\n?/g, '\n')
+    .trim()
 }
 
-function splitByDocTitles(text) {
-  const lines = normalizeText(text).split('\n')
-  const titleToId = new Map(DOC_TITLES.map((t) => [t.title, t.id]))
+function splitDocLines(raw, title) {
+  const normalized = normalizeText(raw)
+  const lines = normalized.split('\n').map((l) => l.trimEnd())
 
-  const docs = []
-  let current = null
-
-  for (const line of lines) {
-    const trimmed = line.trim()
-    const id = titleToId.get(trimmed)
-    if (id) {
-      if (current) docs.push(current)
-      current = { id, title: trimmed, lines: [] }
-      continue
-    }
-    if (current) current.lines.push(line)
-  }
-
-  if (current) docs.push(current)
-  return docs.length ? docs : [{ id: 'legal', title: 'Юридическая информация', lines }]
+  return lines
+    .filter((line) => {
+      const trimmed = line.trim()
+      if (!trimmed) return true
+      if (trimmed.toLowerCase() === 'talko') return false
+      if (trimmed.toLowerCase() === title.toLowerCase()) return false
+      return true
+    })
 }
 
 function splitParagraphs(lines) {
@@ -212,7 +210,23 @@ function ScrollToTopButton() {
 }
 
 export function LegalPage() {
-  const docs = splitByDocTitles(rawText)
+  const docs = [
+    {
+      id: 'privacy',
+      title: DOC_TITLES[0].title,
+      lines: splitDocLines(privacyPolicyRaw, 'ПОЛИТИКА ОБРАБОТКИ ПЕРСОНАЛЬНЫХ ДАННЫХ'),
+    },
+    {
+      id: 'agreement',
+      title: DOC_TITLES[1].title,
+      lines: splitDocLines(userAgreementRaw, 'ПОЛЬЗОВАТЕЛЬСКОЕ СОГЛАШЕНИЕ'),
+    },
+    {
+      id: 'offer',
+      title: DOC_TITLES[2].title,
+      lines: splitDocLines(publicOfferRaw, 'ПУБЛИЧНАЯ ОФЕРТА'),
+    },
+  ]
 
   return (
     <div className="pb-20 pt-10">
