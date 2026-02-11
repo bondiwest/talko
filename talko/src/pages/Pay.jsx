@@ -36,36 +36,6 @@ function loadCloudPayments() {
   return globalThis.__cpWidgetPromise
 }
 
-function onlyDigits(value) {
-  return value.replace(/\D/g, '')
-}
-
-function formatCardNumber(value) {
-  const digits = onlyDigits(value).slice(0, 19)
-  const parts = []
-  for (let i = 0; i < digits.length; i += 4) parts.push(digits.slice(i, i + 4))
-  return parts.join(' ')
-}
-
-function isCardValid(number) {
-  const len = onlyDigits(number).length
-  return len >= 13 && len <= 19
-}
-
-function isMonthValid(mm) {
-  if (!/^\d{2}$/.test(mm)) return false
-  const month = Number(mm)
-  return month >= 1 && month <= 12
-}
-
-function isYearValid(yy) {
-  return /^\d{2}$/.test(yy)
-}
-
-function isCvvValid(cvv) {
-  return /^\d{3,4}$/.test(cvv)
-}
-
 function isPositiveIntString(value) {
   return /^\d+$/.test(value) && Number(value) > 0
 }
@@ -80,10 +50,6 @@ export function PayPage() {
   const [isPaying, setIsPaying] = useState(false)
   const [status, setStatus] = useState('idle') // idle | success | fail
   const [errorText, setErrorText] = useState('')
-  const [cardNumber, setCardNumber] = useState('')
-  const [expMonth, setExpMonth] = useState('')
-  const [expYear, setExpYear] = useState('')
-  const [cvv, setCvv] = useState('')
 
   const params = useMemo(() => {
     const search = new URLSearchParams(window.location.search)
@@ -120,19 +86,10 @@ export function PayPage() {
     }
   }, [])
 
-  const cardValid = isCardValid(cardNumber)
-  const expValid = isMonthValid(expMonth) && isYearValid(expYear)
-  const cvvValid = isCvvValid(cvv)
   const uidValid = isPositiveIntString(params.uid)
   const invoiceValid = isPositiveIntString(params.invoice)
   const hasRequiredParams = uidValid && invoiceValid
-  const canPay =
-    isWidgetReady &&
-    !isPaying &&
-    hasRequiredParams &&
-    cardValid &&
-    expValid &&
-    cvvValid
+  const canPay = isWidgetReady && !isPaying && hasRequiredParams
 
   const onPay = () => {
     if (!uidValid) {
@@ -151,11 +108,6 @@ export function PayPage() {
       setErrorText('Не настроен VITE_CP_PUBLIC_ID')
       return
     }
-    if (!cardValid || !expValid || !cvvValid) {
-      setErrorText('Проверьте номер карты, срок действия и CVV')
-      return
-    }
-
     setErrorText('')
     setStatus('idle')
     setIsPaying(true)
@@ -201,12 +153,6 @@ export function PayPage() {
       console.log('uid:', params.uid)
       console.log('invoice:', params.invoice)
       console.log('mid:', params.mid)
-      console.log('card form:', {
-        cardNumberMasked: `${onlyDigits(cardNumber).slice(0, 6)}******${onlyDigits(cardNumber).slice(-4)}`,
-        expMonth,
-        expYear,
-        cvvLen: cvv.length,
-      })
       console.log('payload:', payload)
       console.groupEnd()
     }
@@ -274,61 +220,10 @@ export function PayPage() {
             </dl>
 
             {hasRequiredParams ? (
-              <div className="mt-8 grid grid-cols-1 gap-4">
-                <label className="block">
-                  <span className="font-body text-[15px] font-semibold text-[var(--body-ink)] opacity-80 sm:text-[16px]">
-                    Номер карты
-                  </span>
-                  <input
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                    inputMode="numeric"
-                    autoComplete="cc-number"
-                    placeholder="0000 0000 0000 0000"
-                    className="mt-2 w-full rounded-[16px] bg-[var(--field)] px-4 py-4 font-body text-[18px] font-semibold tracking-[0.08em] text-[var(--ink)] ring-1 ring-[var(--ring)] outline-none placeholder:text-[var(--muted)] focus:ring-2 focus:ring-[rgba(105,102,255,.22)]"
-                  />
-                </label>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <label className="block">
-                    <span className="font-body text-[15px] font-semibold text-[var(--body-ink)] opacity-80 sm:text-[16px]">
-                      MM/ГГ
-                    </span>
-                    <div className="mt-2 grid grid-cols-2 gap-2">
-                      <input
-                        value={expMonth}
-                        onChange={(e) => setExpMonth(onlyDigits(e.target.value).slice(0, 2))}
-                        inputMode="numeric"
-                        autoComplete="cc-exp-month"
-                        placeholder="MM"
-                        className="w-full rounded-[16px] bg-[var(--field)] px-4 py-4 font-body text-[18px] font-semibold tracking-[0.08em] text-[var(--ink)] ring-1 ring-[var(--ring)] outline-none placeholder:text-[var(--muted)] focus:ring-2 focus:ring-[rgba(105,102,255,.22)]"
-                      />
-                      <input
-                        value={expYear}
-                        onChange={(e) => setExpYear(onlyDigits(e.target.value).slice(0, 2))}
-                        inputMode="numeric"
-                        autoComplete="cc-exp-year"
-                        placeholder="ГГ"
-                        className="w-full rounded-[16px] bg-[var(--field)] px-4 py-4 font-body text-[18px] font-semibold tracking-[0.08em] text-[var(--ink)] ring-1 ring-[var(--ring)] outline-none placeholder:text-[var(--muted)] focus:ring-2 focus:ring-[rgba(105,102,255,.22)]"
-                      />
-                    </div>
-                  </label>
-
-                  <label className="block">
-                    <span className="font-body text-[15px] font-semibold text-[var(--body-ink)] opacity-80 sm:text-[16px]">
-                      CVV
-                    </span>
-                    <input
-                      value={cvv}
-                      onChange={(e) => setCvv(onlyDigits(e.target.value).slice(0, 4))}
-                      inputMode="numeric"
-                      autoComplete="cc-csc"
-                      placeholder="123"
-                      className="mt-2 w-full rounded-[16px] bg-[var(--field)] px-4 py-4 font-body text-[18px] font-semibold tracking-[0.08em] text-[var(--ink)] ring-1 ring-[var(--ring)] outline-none placeholder:text-[var(--muted)] focus:ring-2 focus:ring-[rgba(105,102,255,.22)]"
-                    />
-                  </label>
-                </div>
-              </div>
+              <p className="mt-8 font-body text-[16px] font-medium leading-relaxed text-[var(--body-ink)] opacity-80 sm:text-[18px]">
+                После нажатия на кнопку откроется защищённое окно CloudPayments, где вы
+                сможете ввести данные карты и подтвердить оплату.
+              </p>
             ) : (
               <div className="mt-8 rounded-[18px] bg-[var(--surface)] p-4 font-body text-[16px] font-semibold text-[var(--body-ink)] ring-1 ring-[var(--ring)]">
                 Оплата заблокирована: в ссылке должны быть корректные параметры

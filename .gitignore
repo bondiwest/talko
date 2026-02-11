@@ -20,3 +20,5 @@ talko/dist/
 .env.*
 !.env.example
 !talko/.env.example
+.py
+index_concurent.html
