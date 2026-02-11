@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Header } from './components/Header'
 import { CancelPage } from './pages/Cancel'
 import { LegalPage } from './pages/Legal'
+import { PayPage } from './pages/Pay'
 import { SupportPage } from './pages/Support'
 import { Hero } from './sections/Hero'
 import { Projects } from './sections/Projects'
@@ -76,10 +77,16 @@ function App() {
         : pathname === '/cancel'
           ? {
               title: `${titleBase} · Отмена подписки`,
-              description: 'Форма для поиска и отмены подписки Talko.',
-              urlPath: '/cancel',
+            description: 'Форма для поиска и отмены подписки Talko.',
+            urlPath: '/cancel',
+          }
+        : pathname === '/pay'
+          ? {
+              title: `${titleBase} · Оплата`,
+              description: 'Оплата VIP-доступа через CloudPayments Widget.',
+              urlPath: '/pay',
             }
-          : pathname === '/support'
+        : pathname === '/support'
             ? {
                 title: `${titleBase} · Поддержка`,
                 description: 'Свяжитесь с поддержкой Talko.',
@@ -102,6 +109,7 @@ function App() {
       <main>
         {pathname === '/legal' ? <LegalPage /> : null}
         {pathname === '/cancel' ? <CancelPage /> : null}
+        {pathname === '/pay' ? <PayPage /> : null}
         {pathname === '/support' ? <SupportPage /> : null}
         {pathname === '/' ? (
           <>

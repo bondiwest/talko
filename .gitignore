@@ -18,4 +18,5 @@ talko/dist/
 # Env
 .env
 .env.*
-
+!.env.example
+!talko/.env.example

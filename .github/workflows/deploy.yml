@@ -38,6 +38,8 @@ jobs:
       - name: Build
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
+          VITE_CP_PUBLIC_ID: ${{ secrets.VITE_CP_PUBLIC_ID }}
+          VITE_CP_VAT: 5
         run: |
           npm --prefix talko run build
           cp talko/dist/index.html talko/dist/404.html
