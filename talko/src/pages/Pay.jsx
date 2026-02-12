@@ -7,7 +7,7 @@ const CLOUDPAYMENTS_SCRIPT_ID = 'cloudpayments-widget-script'
 const PUBLIC_ID = (import.meta.env.VITE_CP_PUBLIC_ID || 'pk_test_xxxxxxxxxxxxx').trim()
 const IS_DEV = import.meta.env.DEV
 const VAT = Number.parseInt(import.meta.env.VITE_CP_VAT || '5', 10)
-const PAYMENT_AMOUNT = 7.0
+const PAYMENT_AMOUNT = 5.0
 const PAYMENT_CURRENCY = 'RUB'
 const PAYMENT_DESCRIPTION = 'Предоставление VIP-доступа'
 
