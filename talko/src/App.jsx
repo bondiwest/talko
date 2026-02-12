@@ -3,6 +3,7 @@ import { Header } from './components/Header'
 import { CancelPage } from './pages/Cancel'
 import { LegalPage } from './pages/Legal'
 import { PayPage } from './pages/Pay'
+import { PaySuccessPage } from './pages/PaySuccess'
 import { SupportPage } from './pages/Support'
 import { Hero } from './sections/Hero'
 import { Projects } from './sections/Projects'
@@ -86,6 +87,12 @@ function App() {
               description: 'Оплата VIP-доступа через CloudPayments Widget.',
               urlPath: '/pay',
             }
+        : pathname === '/pay/success'
+          ? {
+              title: `${titleBase} · Оплата успешна`,
+              description: 'Оплата успешно завершена.',
+              urlPath: '/pay/success',
+            }
         : pathname === '/support'
             ? {
                 title: `${titleBase} · Поддержка`,
@@ -110,6 +117,7 @@ function App() {
         {pathname === '/legal' ? <LegalPage /> : null}
         {pathname === '/cancel' ? <CancelPage /> : null}
         {pathname === '/pay' ? <PayPage /> : null}
+        {pathname === '/pay/success' ? <PaySuccessPage /> : null}
         {pathname === '/support' ? <SupportPage /> : null}
         {pathname === '/' ? (
           <>

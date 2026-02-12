@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Container } from '../components/Container'
 import { Reveal } from '../components/Reveal'
+import { PAY_CONSENTS } from '../config/payConsents'
 
 const CLOUDPAYMENTS_SCRIPT_SRC = 'https://widget.cloudpayments.ru/bundles/cloudpayments.js'
 const CLOUDPAYMENTS_SCRIPT_ID = 'cloudpayments-widget-script'
@@ -72,8 +73,11 @@ export function PayPage() {
   const [isPaying, setIsPaying] = useState(false)
   const [status, setStatus] = useState('idle') // idle | success | fail
   const [errorText, setErrorText] = useState('')
-  const [consentChecked, setConsentChecked] = useState(false)
-  const [pricingChecked, setPricingChecked] = useState(false)
+  const [consentsState, setConsentsState] = useState(() => {
+    const initial = {}
+    for (const item of PAY_CONSENTS.items) initial[item.id] = Boolean(item.defaultChecked)
+    return initial
+  })
 
   const params = useMemo(() => {
     const search = new URLSearchParams(window.location.search)
@@ -113,8 +117,46 @@ export function PayPage() {
   const uidValid = isPositiveIntString(params.uid)
   const invoiceValid = isPositiveIntString(params.invoice)
   const hasRequiredParams = uidValid && invoiceValid
-  const checkboxesValid = consentChecked && pricingChecked
+  const checkboxesEnabled = Boolean(PAY_CONSENTS.enabled)
+  const requiredItems = PAY_CONSENTS.items.filter((item) => item.required)
+  const checkboxesValid = !checkboxesEnabled
+    || !PAY_CONSENTS.requireAll
+    || requiredItems.every((item) => consentsState[item.id])
   const canPay = isWidgetReady && !isPaying && hasRequiredParams && checkboxesValid
+
+  const resolveLink = (href) => {
+    if (!href) return '#'
+    if (/^https?:\/\//i.test(href) || href.startsWith('mailto:') || href.startsWith('tel:')) return href
+    const base = import.meta.env.BASE_URL || '/'
+    const normalizedBase = base.endsWith('/') ? base : `${base}/`
+    if (href.startsWith('/')) return `${normalizedBase}${href.slice(1)}`
+    return `${normalizedBase}${href}`
+  }
+
+  const renderConsentText = (text, id) => {
+    const parts = []
+    const re = /\[([^\]]+)\]\(([^)]+)\)/g
+    let lastIndex = 0
+    let match
+    let chunkIndex = 0
+    while ((match = re.exec(text))) {
+      if (match.index > lastIndex) parts.push(<span key={`${id}-t-${chunkIndex++}`}>{text.slice(lastIndex, match.index)}</span>)
+      parts.push(
+        <a
+          key={`${id}-l-${chunkIndex++}`}
+          href={resolveLink(match[2])}
+          className="font-semibold text-[var(--ink)] underline decoration-[var(--ring)] underline-offset-4"
+          target={/^https?:\/\//i.test(match[2]) ? '_blank' : undefined}
+          rel={/^https?:\/\//i.test(match[2]) ? 'noreferrer' : undefined}
+        >
+          {match[1]}
+        </a>,
+      )
+      lastIndex = re.lastIndex
+    }
+    if (lastIndex < text.length) parts.push(<span key={`${id}-t-${chunkIndex++}`}>{text.slice(lastIndex)}</span>)
+    return parts
+  }
 
   const onPay = () => {
     if (!uidValid) {
@@ -133,7 +175,7 @@ export function PayPage() {
       setErrorText('Не настроен VITE_CP_PUBLIC_ID')
       return
     }
-    if (!checkboxesValid) {
+    if (checkboxesEnabled && !checkboxesValid) {
       setErrorText('Подтвердите согласие с условиями перед оплатой')
       return
     }
@@ -173,6 +215,20 @@ export function PayPage() {
           },
           mailing_id: params.mid,
         },
+        consent: {
+          version: PAY_CONSENTS.version,
+          ui_visible: checkboxesEnabled,
+          ui_mode: checkboxesEnabled ? 'checkbox' : 'hidden_auto',
+          checked_at: new Date().toISOString(),
+          account_id: String(Number(params.uid)),
+          invoice_id: String(Number(params.invoice)),
+          items: PAY_CONSENTS.items.map((item) => ({
+            id: item.id,
+            required: Boolean(item.required),
+            checked: checkboxesEnabled ? Boolean(consentsState[item.id]) : true,
+            text: item.text,
+          })),
+        },
       },
     }
 
@@ -194,6 +250,9 @@ export function PayPage() {
           if (IS_DEV) console.log('[CloudPayments] onSuccess')
           setIsPaying(false)
           setStatus('success')
+          const base = import.meta.env.BASE_URL || '/'
+          const normalizedBase = base.endsWith('/') ? base : `${base}/`
+          window.location.assign(`${normalizedBase}pay/success`)
         },
         onFail: () => {
           if (IS_DEV) console.log('[CloudPayments] onFail')
@@ -240,48 +299,27 @@ export function PayPage() {
                   сможете ввести данные карты и подтвердить оплату.
                 </p>
 
-                <div className="mt-6 space-y-4 rounded-[18px] bg-[var(--surface)] p-4 ring-1 ring-[var(--ring)]">
-                  <label className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      checked={consentChecked}
-                      onChange={(e) => setConsentChecked(e.target.checked)}
-                      className="mt-1 h-5 w-5 shrink-0 rounded border-[var(--ring-strong)] text-[var(--accent)]"
-                    />
-                    <span className="font-body text-[14px] leading-relaxed text-[var(--body-ink)] sm:text-[16px]">
-                      Я даю согласие на обработку персональных данных и принимаю условия{' '}
-                      <a
-                        href={`${import.meta.env.BASE_URL || '/'}legal#offer`}
-                        className="font-semibold text-[var(--ink)] underline decoration-[var(--ring)] underline-offset-4"
-                      >
-                        публичной оферты
-                      </a>{' '}
-                      и{' '}
-                      <a
-                        href={`${import.meta.env.BASE_URL || '/'}legal#privacy`}
-                        className="font-semibold text-[var(--ink)] underline decoration-[var(--ring)] underline-offset-4"
-                      >
-                        политики конфиденциальности
-                      </a>
-                      .
-                    </span>
-                  </label>
-
-                  <label className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      checked={pricingChecked}
-                      onChange={(e) => setPricingChecked(e.target.checked)}
-                      className="mt-1 h-5 w-5 shrink-0 rounded border-[var(--ring-strong)] text-[var(--accent)]"
-                    />
-                    <span className="font-body text-[14px] leading-relaxed text-[var(--body-ink)] sm:text-[16px]">
-                      Я согласен с суммой и периодичностью списания: первый день 5₽, далее
-                      399₽ раз в 3 дня, либо 299₽ раз в 3 дня, либо 99₽ раз в день согласно
-                      тарифам и правилам рекуррентных платежей. Отменить подписку можно в
-                      любой момент.
-                    </span>
-                  </label>
-                </div>
+                {checkboxesEnabled ? (
+                  <div className="mt-6 space-y-4 rounded-[18px] bg-[var(--surface)] p-4 ring-1 ring-[var(--ring)]">
+                    {PAY_CONSENTS.items.map((item) => (
+                      <label key={item.id} className="flex items-start gap-3">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(consentsState[item.id])}
+                          onChange={(e) =>
+                            setConsentsState((prev) => ({
+                              ...prev,
+                              [item.id]: e.target.checked,
+                            }))}
+                          className="mt-1 h-5 w-5 shrink-0 rounded border-[var(--ring-strong)] text-[var(--accent)]"
+                        />
+                        <span className="font-body text-[14px] leading-relaxed text-[var(--body-ink)] sm:text-[16px]">
+                          {renderConsentText(item.text, item.id)}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                ) : null}
               </>
             ) : (
               <div className="mt-8 rounded-[18px] bg-[var(--surface)] p-4 font-body text-[16px] font-semibold text-[var(--body-ink)] ring-1 ring-[var(--ring)]">

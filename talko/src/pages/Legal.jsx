@@ -3,6 +3,7 @@ import { Container } from '../components/Container'
 import privacyPolicyRaw from '../data/legal/privacy_pd.txt?raw'
 import userAgreementRaw from '../data/legal/user_agreement.txt?raw'
 import publicOfferRaw from '../data/legal/public_offer.txt?raw'
+import tariffsSubscriptionRaw from '../data/legal/tariffs_subscription.txt?raw'
 import { Reveal } from '../components/Reveal'
 import { ArrowRightIcon } from '../components/Icons'
 
@@ -10,6 +11,7 @@ const DOC_TITLES = [
   { id: 'privacy', title: 'Политика обработки персональных данных', date: 'Редакция от 11 февраля 2026 г.' },
   { id: 'agreement', title: 'Пользовательское соглашение', date: 'Редакция от 11 февраля 2026 г.' },
   { id: 'offer', title: 'Публичная оферта', date: 'Редакция от 11 февраля 2026 г.' },
+  { id: 'tariffs', title: 'Положение о тарифах и подписке', date: 'Редакция от 11 февраля 2026 г.' },
 ]
 
 function normalizeText(text) {
@@ -291,6 +293,12 @@ export function LegalPage() {
       title: DOC_TITLES[2].title,
       date: DOC_TITLES[2].date,
       lines: splitDocLines(publicOfferRaw, 'ПУБЛИЧНАЯ ОФЕРТА'),
+    },
+    {
+      id: 'tariffs',
+      title: DOC_TITLES[3].title,
+      date: DOC_TITLES[3].date,
+      lines: splitDocLines(tariffsSubscriptionRaw, 'ПОЛОЖЕНИЕ О ТАРИФАХ И ПОДПИСКЕ'),
     },
   ]
 
