@@ -3,6 +3,7 @@ import { Container } from './Container'
 import { ArrowRightIcon, BurgerIcon, MoonIcon, SunIcon } from './Icons'
 import { UI_FLAGS } from '../config/ui'
 import { track } from '../lib/analytics'
+import logoNav from '../assets/logo-nav.svg'
 
 const BASE_URL = import.meta.env.BASE_URL || '/'
 
@@ -220,10 +221,11 @@ export function Header() {
           <span aria-hidden="true" className="glass-zoom" />
           <span aria-hidden="true" className="glass-sheen" />
           <a
-            className="font-body rounded-full px-3 py-2 text-[16px] font-semibold tracking-wide text-[var(--muted)] transition hover:text-[var(--ink)]"
+            className="inline-flex items-center justify-center rounded-full px-3 py-2 transition hover:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(105,102,255,.25)]"
             href={BASE_URL}
+            aria-label="Talko"
           >
-            Talko
+            <img src={logoNav} alt="" className="h-7 w-7 sm:h-8 sm:w-8" />
           </a>
 
           <nav
@@ -321,10 +323,11 @@ export function Header() {
             <span aria-hidden="true" className="glass-zoom" />
             <span aria-hidden="true" className="glass-sheen" />
             <a
-              className="font-body rounded-full px-3 py-2 text-[16px] font-semibold tracking-wide text-[var(--muted)] transition hover:text-[var(--ink)]"
+              className="inline-flex items-center justify-center rounded-full px-3 py-2 transition hover:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(105,102,255,.25)]"
               href={BASE_URL}
+              aria-label="Talko"
             >
-              Talko
+              <img src={logoNav} alt="" className="h-7 w-7 sm:h-8 sm:w-8" />
             </a>
 
             <div className="flex items-center gap-2">

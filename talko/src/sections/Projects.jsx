@@ -10,6 +10,7 @@ import heart1Lottie from '../assets/lottie/heart1.json'
 import heart2Lottie from '../assets/lottie/heart2.json'
 import heart3Lottie from '../assets/lottie/heart3.json'
 import heartFallbackSvg from '../assets/emojies/heart.svg'
+import startIcon from '../assets/icons/start.svg'
 
 const LOTTIE_BY_KEY = {
   heart1: heart1Lottie,
@@ -111,10 +112,10 @@ function Card({ title, description, image, glow, highlights, href, lottieKeys = 
   }
 
   return (
-    <article className="group flex h-full flex-col rounded-[22px] bg-[var(--card)] p-9 text-center shadow-[0_22px_70px_rgba(105,102,255,.10)] ring-1 ring-[var(--ring)] transition duration-300 will-change-transform hover:-translate-y-1 hover:shadow-[0_28px_90px_rgba(105,102,255,.16)] sm:p-10 sm:text-left">
+    <article className="group flex h-full min-w-0 flex-col overflow-hidden rounded-[32px] bg-[var(--card)] text-left shadow-[0_22px_70px_rgba(105,102,255,.10)] ring-1 ring-[var(--ring)] transition duration-300 will-change-transform hover:-translate-y-1 hover:shadow-[0_28px_90px_rgba(105,102,255,.16)]">
       <button
         type="button"
-        className={`avatar-gloss mx-auto mb-6 h-[120px] w-[120px] appearance-none border-0 bg-transparent p-0 sm:mx-0 ${isAvatarBursting ? 'avatar-gloss--burst' : ''}`}
+        className={`avatar-gloss relative block w-full appearance-none border-0 bg-transparent p-0 ${isAvatarBursting ? 'avatar-gloss--burst' : ''}`}
         style={{ '--avatar-glow': glow }}
         aria-label={`Показать анимированные эмодзи проекта ${title}`}
         onClick={triggerAvatarBurst}
@@ -131,7 +132,7 @@ function Card({ title, description, image, glow, highlights, href, lottieKeys = 
             }}
           />
         ))}
-        <div className="avatar-media relative z-[1] h-full w-full overflow-hidden rounded-2xl bg-[var(--surface)] shadow-[0_12px_40px_rgba(20,20,40,.08)] ring-1 ring-[var(--ring)]">
+        <div className="avatar-media relative z-[1] aspect-square w-full bg-[var(--surface)]">
           <img
             src={image}
             alt={title}
@@ -141,26 +142,28 @@ function Card({ title, description, image, glow, highlights, href, lottieKeys = 
         </div>
       </button>
 
-      <h3 className="project-card-title font-display text-[26px] font-bold leading-[26px] text-[var(--ink)] sm:text-[30px] sm:leading-[30px] md:text-[40px] md:leading-[40px] lg:text-[46px] lg:leading-[44px]">
-        {title}
-      </h3>
-      <p className="clamp-4 mt-4 text-[16px] font-normal leading-[1.75] text-[var(--body-ink)] opacity-70 sm:text-[18px]">
-        <HighlightedText text={description} highlights={highlights} />
-      </p>
+      <div className="flex h-full min-w-0 flex-col px-4 pb-4 pt-4">
+        <h3 className="project-card-title clamp-2 break-words font-display text-[20px] font-semibold leading-[22px] text-[var(--ink)] sm:text-[22px] sm:leading-[24px] lg:text-[24px] lg:leading-[26px]">
+          {title}
+        </h3>
+        <p className="clamp-4 mt-2 break-words text-[14px] font-normal leading-[1.55] text-[var(--body-ink)] opacity-70 sm:text-[15px] lg:text-[16px]">
+          <HighlightedText text={description} highlights={highlights} />
+        </p>
 
-      <div className="mt-auto pt-8">
+        <div className="mt-auto pt-4">
         <a
           href={href}
           target="_blank"
           rel="noreferrer"
-          className="btn-accent font-body inline-flex w-full items-center justify-center gap-2 rounded-[20px] px-5 py-4 text-[18px] font-semibold text-white shadow-[0_18px_40px_rgba(120,88,255,.25)] transition hover:brightness-95 active:translate-y-px active:scale-[0.99] sm:text-[20px]"
+          className="btn-accent font-body inline-flex h-[47px] w-full items-center justify-center gap-2 rounded-[9999px] px-4 py-3 text-[14px] font-semibold leading-none text-white shadow-[0_18px_40px_rgba(120,88,255,.25)] transition hover:brightness-95 active:translate-y-px active:scale-[0.99]"
           onClick={() => track('project_cta', { title, href })}
         >
-          Перейти в бота
-          <span aria-hidden="true" className="grid h-6 w-6 place-items-center">
-            <ArrowRightIcon className="h-5 w-5 opacity-95" />
+          <span aria-hidden="true" className="grid h-5 w-5 place-items-center">
+            <img src={startIcon} alt="" className="h-5 w-5" />
           </span>
+          <span>Запустить</span>
         </a>
+      </div>
       </div>
     </article>
   )
@@ -175,19 +178,12 @@ export function Projects() {
           delay={0}
           className="flex items-center justify-center gap-3 pb-8 pt-2"
         >
-          <h2 className="font-display text-center text-[32px] font-bold leading-[32px] text-[var(--ink)] sm:text-[40px] sm:leading-[40px] md:text-[64px] md:leading-[64px] lg:text-[86px] lg:leading-[83px]">
+          <h2 className="font-display text-center text-[48px] font-bold leading-[48px] text-[var(--ink)] sm:text-[56px] sm:leading-[56px] lg:text-[80px] lg:leading-[80px]">
             Наши проекты
           </h2>
-          <button
-            type="button"
-            aria-label="Открыть каталог"
-            className="grid h-10 w-10 place-items-center rounded-full bg-[var(--ink)] text-white shadow-[0_16px_40px_rgba(20,20,40,.12)] transition hover:brightness-110 active:translate-y-px active:scale-[0.99]"
-          >
-            <ArrowRightIcon className="h-5 w-5 -rotate-45 opacity-95" />
-          </button>
         </Reveal>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 justify-center gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(4,230px)] xl:grid-cols-[repeat(5,230px)]">
           {projects.map((p, idx) => (
             <Reveal key={p.title} className="h-full" delay={Math.min(40 + idx * 35, 220)}>
               <Card {...p} />

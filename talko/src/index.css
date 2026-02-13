@@ -650,6 +650,14 @@ html[data-theme="dark"] .glass-sheen {
   overflow: hidden;
 }
 
+/* Simple line clamp helper (no Tailwind plugin needed). */
+.clamp-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
 /* Inline accent for important words/phrases inside paragraphs. */
 .accent-word {
   font-weight: 600;
@@ -674,13 +682,7 @@ html[data-theme="dark"] .accent-word {
   );
 }
 
-/* Card titles: smaller around ~1200px (3-col layout) so they don't feel oversized. */
-@media (min-width: 1024px) and (max-width: 1279.98px) {
-  .project-card-title {
-    font-size: 44px;
-    line-height: 42px;
-  }
-}
+/* (intentionally no special overrides for .project-card-title; controlled per-component) */
 
 /* Legal typography helpers. */
 .legal-text {

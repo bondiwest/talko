@@ -2,7 +2,8 @@ export function Container({ className = '', children }) {
   return (
     <div
       className={[
-        'mx-auto w-full max-w-[1216px] px-4 sm:px-6 lg:px-8',
+        // Content width: 1280px on desktop; fluid with paddings on tablet/mobile.
+        'mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8',
         className,
       ].join(' ')}
     >
@@ -10,4 +11,3 @@ export function Container({ className = '', children }) {
     </div>
   )
 }
-

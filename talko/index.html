@@ -2,7 +2,7 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Talko</title>
     <meta name="description" content="Проекты от Talko: развлекательные боты для знакомства и общения." />
@@ -23,8 +23,85 @@
         } catch {}
       })()
     </script>
+    <style>
+      /* Preloader: shown until React mounts. Keep self-contained (no external CSS). */
+      #preloader {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: grid;
+        place-items: center;
+        background: #ffffff;
+        transition: opacity 260ms ease, visibility 260ms ease;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+
+      #preloader.preloader--show {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: none;
+      }
+
+      html[data-theme="dark"] #preloader {
+        background: #070911;
+      }
+
+      /* Avoid white flashes before the app CSS loads. */
+      body {
+        margin: 0;
+        background: #ffffff;
+      }
+
+      html[data-theme="dark"] body {
+        background: #070911;
+      }
+
+      .preloader-spinner {
+        width: 56px;
+        height: 56px;
+        border-radius: 999px;
+        border: 3px solid rgba(105, 102, 255, 0.22);
+        border-top-color: rgba(105, 102, 255, 0.92);
+        animation: preloader-spin 850ms linear infinite;
+        flex: 0 0 auto;
+      }
+
+      html[data-theme="dark"] .preloader-spinner {
+        border-color: rgba(255, 255, 255, 0.14);
+        border-top-color: rgba(213, 211, 255, 0.9);
+      }
+
+      @keyframes preloader-spin {
+        to { transform: rotate(360deg); }
+      }
+
+      #preloader.preloader--hide {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+    </style>
+    <script>
+      ;(() => {
+        // Show spinner only if initial JS/app mount is taking noticeable time.
+        // This runs even when the module bundle is still downloading.
+        try {
+          window.__talkoPreloaderTimer = window.setTimeout(() => {
+            const el = document.getElementById('preloader')
+            if (!el) return
+            el.dataset.shownAt = String(Date.now())
+            el.classList.add('preloader--show')
+          }, 250)
+        } catch {}
+      })()
+    </script>
   </head>
   <body>
+    <div id="preloader" aria-hidden="true">
+      <div class="preloader-spinner" aria-hidden="true"></div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
