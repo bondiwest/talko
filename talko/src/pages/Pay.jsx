@@ -219,7 +219,7 @@ export function PayPage() {
           version: PAY_CONSENTS.version,
           ui_visible: checkboxesEnabled,
           ui_mode: checkboxesEnabled ? 'checkbox' : 'hidden_auto',
-          checked_at: new Date().toISOString(),
+          consent_checked_at: new Date().toISOString(),
           account_id: String(Number(params.uid)),
           invoice_id: String(Number(params.invoice)),
           items: PAY_CONSENTS.items.map((item) => ({
